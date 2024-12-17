@@ -19,7 +19,8 @@ This Python script allows for the migration of Redis keys from one Redis server 
 
 ### Command-line Arguments
 ```bash
-python migrate.py –export-host <export_redis_host> –import-host <import_redis_host> –db <db_list> [–scan-batch-size <scan_batch_size>] [–chunk-size <chunk_size>]
+python3 redis_migrate_parallel.py --export-host <export_redis_host> --import-host <import_redis_host> --db <db_list> --scan-batch-size <scan_batch_size> --chunk-size <chunk_size>
+
 ```
 ### Arguments
 
@@ -33,13 +34,13 @@ python migrate.py –export-host <export_redis_host> –import-host <import_redi
 
 To migrate Redis keys from a database on a server at `export_redis_host` to another server at `import_redis_host`, transferring data from databases 0 and 1, you can run:
 ```bash
-python migrate.py –export-host 192.168.1.10 –import-host 192.168.1.20 –db 0,1 –scan-batch-size 500 –chunk-size 50
+python3 redis_migrate_parallel.py --export-host keydb-s0-2 --import-host keydb-s0-0 --db 0,1,4,5,6,9,11,12,13 --scan-batch-size 2000 --chunk-size 500
 ```
 This command will:
 
-1. Export keys from databases 0 and 1 on the Redis server at `192.168.1.10`.
-2. Import those keys into the Redis server at `192.168.1.20`.
-3. Use a scan batch size of 500 and process the keys in chunks of 50.
+1. Export keys from databases 0 and 1 on the Redis server at `keydb-s0-2`.
+2. Import those keys into the Redis server at `keydb-s0-0`.
+3. Use a scan batch size of 2000 and process the keys in chunks of 500.
 
 ### How It Works
 
@@ -52,11 +53,6 @@ This command will:
 ### Parallel Migration
 
 The migration can be run in parallel for multiple databases. The `migrate_db_in_process` function runs each database migration in a separate process, allowing for efficient concurrent migrations.
-
-## Error Handling
-
-- If a Redis connection fails, or an error occurs during key migration, the script will log the error with the database number and key details.
-- The script will continue processing other keys even if some migrations fail.
 
 ## Requirements
 
@@ -71,6 +67,10 @@ The migration can be run in parallel for multiple databases. The `migrate_db_in_
     ```
     pip install redis
     ```
+   or
+   ```
+   pip install -r requirements.txt
+   ```
 
 3. Run the script as shown in the examples above.
 
