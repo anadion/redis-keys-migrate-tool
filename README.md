@@ -13,7 +13,7 @@ This Python script allows for the migration of Redis keys from one Redis server 
 ## Prerequisites
 
 - Python 3.x
-- Redis Python Client (`redis-py`) - Install via `pip install redis argparse`.
+- Redis Python Client (`redis-py`) - Install via `pip install redis`.
 
 ## Usage
 
