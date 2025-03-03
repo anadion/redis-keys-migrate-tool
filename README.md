@@ -29,6 +29,7 @@ python3 redis_migrate_parallel.py --export-host <export_redis_host> --import-hos
 - `--db`: A comma-separated list of Redis database numbers to migrate (Required).
 - `--scan-batch-size`: The batch size for the `SCAN` operation (default: 1000).
 - `--chunk-size`: The size of the key chunks to be processed in parallel (default: 100).
+- `--key-pattern`: Pattern to filter keys (default '*').
 
 ### Example
 

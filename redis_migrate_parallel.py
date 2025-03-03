@@ -27,9 +27,9 @@ def process_chunk(source_redis, target_redis, keys, db):
     except Exception as e:
         print(f"[DB {db}] Unknown error: {e}")
 
-def migrate_db(export_host, import_host, db, scan_batch_size=1000, chunk_size=100):
+def migrate_db(export_host, import_host, db, scan_batch_size=1000, chunk_size=100, key_pattern="*"):
     """
-    Migrate keys from one Redis database to another using SCAN, chunks and pipelining.
+    Migrate keys from one Redis database to another using SCAN, chunks, and pipelining.
     """
     try:
         print(f"[DB {db}] Connecting to the servers...")
@@ -43,7 +43,7 @@ def migrate_db(export_host, import_host, db, scan_batch_size=1000, chunk_size=10
         with ThreadPoolExecutor() as executor:
             futures = []
             while True:
-                cursor, keys = source_redis.scan(cursor=cursor, count=scan_batch_size)
+                cursor, keys = source_redis.scan(cursor=cursor, match=key_pattern, count=scan_batch_size)
                 # Breaking keys into chunks
                 for i in range(0, len(keys), chunk_size):
                     chunk = keys[i:i + chunk_size]
@@ -63,11 +63,11 @@ def migrate_db(export_host, import_host, db, scan_batch_size=1000, chunk_size=10
     except Exception as e:
         print(f"[DB {db}] Error: {e}")
 
-def migrate_db_in_process(export_host, import_host, db, scan_batch_size, chunk_size):
+def migrate_db_in_process(export_host, import_host, db, scan_batch_size, chunk_size, key_pattern):
     """
     Wrapper for running database migration in a separate process.
     """
-    process = Process(target=migrate_db, args=(export_host, import_host, db, scan_batch_size, chunk_size))
+    process = Process(target=migrate_db, args=(export_host, import_host, db, scan_batch_size, chunk_size, key_pattern))
     process.start()
     return process
 
@@ -78,6 +78,7 @@ def main():
     parser.add_argument('--db', required=True, help="List of databases to migrate (comma separated)")
     parser.add_argument('--scan-batch-size', type=int, default=1000, help="Batch size for SCAN (default 1000)")
     parser.add_argument('--chunk-size', type=int, default=100, help="Chunk size for parallel processing (default 100)")
+    parser.add_argument('--key-pattern', type=str, default="*", help="Pattern to filter keys (default '*')")
 
     args = parser.parse_args()
 
@@ -89,7 +90,7 @@ def main():
 
     processes = []
     for db in db_list:
-        processes.append(migrate_db_in_process(args.export_host, args.import_host, db, args.scan_batch_size, args.chunk_size))
+        processes.append(migrate_db_in_process(args.export_host, args.import_host, db, args.scan_batch_size, args.chunk_size, args.key_pattern))
 
     for process in processes:
         process.join()
